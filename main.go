@@ -1,9 +1,9 @@
 package main
 
 import (
-	"awesomeProject/app"
-	"awesomeProject/controllers"
 	"fmt"
+	"github.com/Manuhmutua/movies-backend-apis/app"
+	"github.com/Manuhmutua/movies-backend-apis/controllers"
 	"github.com/gorilla/mux"
 	"net/http"
 	"os"
@@ -13,10 +13,9 @@ func main() {
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/api/user/new", controllers.CreateAccount).Methods("POST")
-	router.HandleFunc("/api/user/login", controllers.Authenticate).Methods("POST")
-	router.HandleFunc("/api/contacts/new", controllers.CreateContact).Methods("POST")
-	router.HandleFunc("/api/me/contacts", controllers.GetContactsFor).Methods("GET")
+	router.HandleFunc("/api/v1/user/auth", controllers.CreateAccount).Methods("POST")
+	router.HandleFunc("/api/v1/user/login", controllers.Authenticate).Methods("POST")
+	router.HandleFunc("/api/v1/getMovies", controllers.GetContactsFor).Methods("GET")
 
 	router.Use(app.JwtAuthentication) //attach JWT auth middleware
 
