@@ -1,9 +1,12 @@
-module github.com/Manuhmutua/movies-backend-apis/models
+module github.com/Manuhmutua/movies-backend-apis
 
 go 1.12
 
 require (
-	github.com/Manuhmutua/movies-backend-apis v0.0.0-20190622081441-347273d811ea // indirect
 	github.com/PuerkitoBio/goquery v1.5.0
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gorilla/mux v1.7.2
+	github.com/jinzhu/gorm v1.9.9
+	github.com/joho/godotenv v1.3.0
+	golang.org/x/crypto v0.0.0-20190621222207-cc06ce4a13d4
 )
