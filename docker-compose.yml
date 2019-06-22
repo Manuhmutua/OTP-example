@@ -1,0 +1,22 @@
+version: '3.3'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: db_user
+      POSTGRES_DB: database
+    ports:
+      - 5434:5434
+
+  application:
+    depends_on:
+      - db
+    image: backend-apppo
+    build:
+      context: .
+    restart: always
+    ports:
+      - 12345:8000
