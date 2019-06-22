@@ -1,10 +1,10 @@
 package app
 
 import (
-	"awesomeProject/models"
-	u "awesomeProject/utils"
 	"context"
 	"fmt"
+	"github.com/Manuhmutua/movies-backend-apis/models"
+	u "github.com/Manuhmutua/movies-backend-apis/utils"
 	"github.com/dgrijalva/jwt-go"
 	"net/http"
 	"os"

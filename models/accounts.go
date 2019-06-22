@@ -1,7 +1,7 @@
 package models
 
 import (
-	u "awesomeProject/utils"
+	u "github.com/Manuhmutua/movies-backend-apis/utils"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
@@ -13,7 +13,7 @@ import (
 JWT claims struct
 */
 type Token struct {
-	UserId   uint
+	UserId    uint
 	Useremail string
 	jwt.StandardClaims
 }

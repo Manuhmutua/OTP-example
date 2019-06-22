@@ -1,7 +1,7 @@
 package app
 
 import (
-	u "awesomeProject/utils"
+	u "github.com/Manuhmutua/movies-backend-apis/utils"
 	"net/http"
 )
 

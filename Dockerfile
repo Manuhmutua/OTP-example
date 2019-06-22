@@ -1,9 +1,16 @@
-FROM golang:1.8
+FROM golang:1.10 AS builder
 
-WORKDIR $GOPATH/src/awesomeProject
-COPY . .
+# Download and install the latest release of dep
+ADD https://github.com/golang/dep/releases/download/v0.4.1/dep-linux-amd64 /usr/bin/dep
+RUN chmod +x /usr/bin/dep
 
-RUN go get -d -v ./...
-RUN go install -v ./...
+# Copy the code from the host and compile it
+WORKDIR $GOPATH/src/github.com/movies-backend-apis
+COPY Gopkg.toml Gopkg.lock ./
+RUN dep ensure --vendor-only
+COPY . ./
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo -o /app .
 
-CMD ["awesomeProject"]
+FROM scratch
+COPY --from=builder /app ./
+ENTRYPOINT ["./app"]

@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"awesomeProject/models"
-	u "awesomeProject/utils"
 	"encoding/json"
+	"github.com/Manuhmutua/movies-backend-apis/models"
+	u "github.com/Manuhmutua/movies-backend-apis/utils"
 	"net/http"
 )
 

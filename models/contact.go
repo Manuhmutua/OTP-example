@@ -1,8 +1,8 @@
 package models
 
 import (
-	u "awesomeProject/utils"
 	"fmt"
+	u "github.com/Manuhmutua/movies-backend-apis/utils"
 	"github.com/jinzhu/gorm"
 )
 
