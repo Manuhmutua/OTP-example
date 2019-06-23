@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	u "github.com/Manuhmutua/movies-backend-apis/utils"
@@ -36,7 +37,6 @@ type Account struct {
 	Verified bool      `json:"verified"`
 }
 
-var Totp *gotp.TOTP
 //Validate incoming user details...
 func (account *Account) Validate() (map[string]interface{}, bool) {
 
@@ -81,6 +81,7 @@ func sendMessage(userName string, phoneNumber string, otp *gotp.TOTP) map[string
 	// Set up rand
 	rand.Seed(time.Now().Unix())
 
+	ctx := context.WithValue(context.Background(), gotp.OTP{}, otp.Now())
 	msgData := url.Values{}
 	msgData.Set("To", phoneNumber)
 	msgData.Set("From", os.Getenv("SMS_ACCOUNT_NUMBER"))
@@ -92,6 +93,7 @@ func sendMessage(userName string, phoneNumber string, otp *gotp.TOTP) map[string
 	req.SetBasicAuth(accountSid, authToken)
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	ctx.Done()
 
 	resp, _ := client.Do(req)
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
