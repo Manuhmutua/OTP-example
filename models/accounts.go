@@ -36,6 +36,8 @@ type Account struct {
 	Verified bool      `json:"verified"`
 }
 
+var totp *gotp.TOTP
+
 //Validate incoming user details...
 func (account *Account) Validate() (map[string]interface{}, bool) {
 
@@ -138,7 +140,7 @@ func (account *Account) Create() map[string]interface{} {
 	return response
 }
 
-func Login(phone string, otp string, totp *gotp.TOTP) map[string]interface{} {
+func Login(phone string, otp string) map[string]interface{} {
 
 	account := &Account{}
 	err := GetDB().Table("accounts").Where("phone = ?", phone).First(account).Error
