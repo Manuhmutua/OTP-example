@@ -36,8 +36,6 @@ type Account struct {
 	Verified bool      `json:"verified"`
 }
 
-var totp *gotp.TOTP
-
 //Validate incoming user details...
 func (account *Account) Validate() (map[string]interface{}, bool) {
 
@@ -150,6 +148,9 @@ func Login(phone string, otp string) map[string]interface{} {
 		}
 		return u.Message(false, "Connection error. Please retry")
 	}
+
+	totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
+	totp.ProvisioningUri("OurMesseger", "movieShow")
 
 	if !strings.Contains(otp, totp.Now()) { //OTP does not match!
 		return u.Message(false, "Invalid otp. Please try again")
