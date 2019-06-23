@@ -33,6 +33,7 @@ type Account struct {
 	UserName string    `json:"user_name"`
 	OTP      string    `json:"otp_number"`
 	Token    string    `json:"token";sql:"-"`
+	Active   bool      `json:"active"`
 }
 
 var totp *gotp.TOTP
@@ -84,7 +85,7 @@ func sendMessage(userName string, phoneNumber string, otp *gotp.TOTP) map[string
 	msgData := url.Values{}
 	msgData.Set("To", phoneNumber)
 	msgData.Set("From", os.Getenv("SMS_ACCOUNT_NUMBER"))
-	msgData.Set("Body", "Hello, " + userName + " . Your OTP pin is: " + otp.Now())
+	msgData.Set("Body", "Hello, "+userName+" . Your OTP pin is: "+otp.Now())
 	msgDataReader := *strings.NewReader(msgData.Encode())
 
 	client := &http.Client{}
@@ -133,15 +134,15 @@ func (account *Account) Create() map[string]interface{} {
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("TOKEN_PASSWORD")))
 	account.Token = tokenString
+	account.Active = false
 
 	response := u.Message(true, "Account has been created, Proceed With Verification")
 	response["account"] = account
 	return response
 }
 
-func Login(phone, otp string) map[string]interface{} {
+func (account *Account) Login(phone, otp string, status bool) map[string]interface{} {
 
-	account := &Account{}
 	err := GetDB().Table("accounts").Where("phone = ?", phone).First(account).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -159,18 +160,17 @@ func Login(phone, otp string) map[string]interface{} {
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("TOKEN_PASSWORD")))
 	account.Token = tokenString //Store the token in the response
+	account.Active = true
 
 	resp := u.Message(true, "Logged In")
 	resp["account"] = account
 	return resp
 }
 
-func GetUser(u uuid.UUID) *Account {
-	acc := &Account{}
-	GetDB().Table("accounts").Where("uuid = ?", u).First(acc)
-	if acc.Phone == "" { //User not found!
+func (account *Account) GetUser(u uuid.UUID) *Account {
+	GetDB().Table("accounts").Where("uuid = ?", u).First(account)
+	if account.Phone == "" { //User not found!
 		return nil
 	}
-
-	return acc
+	return account
 }
