@@ -1,102 +1,182 @@
 package models
 
 import (
+	"encoding/json"
+	"fmt"
 	u "github.com/Manuhmutua/movies-backend-apis/utils"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/satori/go.uuid"
+	"github.com/xlzd/gotp"
+	"math/rand"
+	"net/http"
+	"net/url"
 	"os"
 	"strings"
+	"time"
 )
 
 /*
 JWT claims struct
 */
 type Token struct {
-	UserId    uint
-	Useremail string
+	UserId uuid.UUID
+	Phone  string
 	jwt.StandardClaims
 }
 
 //a struct to rep user account
 type Account struct {
 	gorm.Model
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Token    string `json:"token";sql:"-"`
+	ID       uuid.UUID `gorm:"primary_key;auto_increment:false" json:"uuid"`
+	Phone    string    `json:"phone_number"`
+	UserName string    `json:"user_name"`
+	Token    string    `json:"token";sql:"-"`
 }
+
+//a struct to rep messages
+type Message struct {
+	gorm.Model
+	ID        uuid.UUID   `gorm:"primary_key;auto_increment:false" json:"message_id"`
+	Recipient string      `json:"recipients_phone_number"`
+	Message   string      `json:"recipients_phone_number"`
+	SID       interface{} `json:"message_sid"`
+}
+
+var totp *gotp.TOTP
 
 //Validate incoming user details...
 func (account *Account) Validate() (map[string]interface{}, bool) {
 
-	if !strings.Contains(account.Email, "@") {
-		return u.Message(false, "Email address is required"), false
+	if !strings.Contains(account.Phone, "+") {
+		return u.Message(false, "Phone Number address is required"), false
 	}
 
-	if len(account.Password) < 6 {
-		return u.Message(false, "Password is required"), false
+	if len(account.UserName) < 3 {
+		return u.Message(false, "Username is required"), false
 	}
 
-	//Email must be unique
+	//PhoneNumber must be unique
 	temp := &Account{}
 
-	//check for errors and duplicate emails
-	err := GetDB().Table("accounts").Where("email = ?", account.Email).First(temp).Error
+	//check for errors and duplicate phones
+	err := GetDB().Table("accounts").Where("phone_number = ?", account.Phone).First(temp).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
-		return u.Message(false, "Connection error. Please retry" + err.Error()), false
+		return u.Message(false, "Connection error. Please retry"+err.Error()), false
 	}
-	if temp.Email != "" {
-		return u.Message(false, "Email address already in use by another user."), false
+	if temp.Phone != "" {
+		return u.Message(false, "Phone Number address already in use by another user."), false
+	}
+
+	//check for errors and duplicate username
+	err = GetDB().Table("accounts").Where("user_name = ?", account.UserName).First(temp).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return u.Message(false, "Connection error. Please retry"+err.Error()), false
+	}
+	if temp.UserName != "" {
+		response := fmt.Sprintf("Username: %d is already in use by another user.", account.UserName)
+		return u.Message(false, response), false
 	}
 
 	return u.Message(false, "Requirement passed"), true
 }
 
-func (account *Account) Create() (map[string]interface{}) {
+func sendMessage(userName string, phoneNumber string, otp *gotp.TOTP) map[string]interface{} {
+	accountSid := os.Getenv("SMS_ACCOUNT_SID")
+	authToken := os.Getenv("SMS_AUTH_TOKEN")
+	urlStr := "https://api.twilio.com/2010-04-01/Accounts/" + accountSid + "/Messages.json"
+
+	// Create possible message bodies
+	msg := fmt.Sprintf("Hello, %d . Your OTP pin is: %d", userName, otp)
+
+	// Set up rand
+	rand.Seed(time.Now().Unix())
+
+	msgData := url.Values{}
+	msgData.Set("To", phoneNumber)
+	msgData.Set("From", os.Getenv("SMS_ACCOUNT_NUMBER"))
+	msgData.Set("Body", msg)
+	msgDataReader := *strings.NewReader(msgData.Encode())
+
+	client := &http.Client{}
+	req, _ := http.NewRequest("POST", urlStr, &msgDataReader)
+	req.SetBasicAuth(accountSid, authToken)
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, _ := client.Do(req)
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		var data map[string]interface{}
+		decoder := json.NewDecoder(resp.Body)
+		err := decoder.Decode(&data)
+		if err == nil {
+			fmt.Println(data["sid"])
+
+			id, err := uuid.FromString("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
+			if err != nil {
+				return u.Message(false, "Failed to create account, connection error.(UUID)")
+			}
+			var message Message
+			message.ID = id
+			message.Message = msg
+			message.Recipient = phoneNumber
+			message.SID = data["sid"]
+			GetDB().Create(message)
+		}
+	} else {
+		return u.Message(false, "Failed to create account, connection error.(Sending Message)")
+	}
+	return nil
+}
+
+func (account *Account) Create() map[string]interface{} {
 
 	if resp, ok := account.Validate(); !ok {
 		return resp
 	}
 
-	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
-	account.Password = string(hashedPassword)
+	// Generate UUID
+	Uuid, err := uuid.FromString("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
+	if err != nil {
+		return u.Message(false, "Failed to create account, connection error.(UUID)")
+	}
+	account.ID = Uuid
+
+	// Handle Message Logic
+	totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
+	totp.Now()          // current otp '123456'
+	totp.At(1524486261) // otp of timestamp 1524486261 '123456'
+	totp.ProvisioningUri("OurMesseger", "movieShow")
+
+	sendMessage(account.UserName, account.Phone, totp)
 
 	GetDB().Create(account)
 
-	if account.ID <= 0 {
-		return u.Message(false, "Failed to create account, connection error.")
-	}
-
 	//Create new JWT token for the newly registered account
-	tk := &Token{UserId: account.ID, Useremail: account.Email}
+	tk := &Token{UserId: account.ID, Phone: account.Phone}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("TOKEN_PASSWORD")))
 	account.Token = tokenString
 
-	account.Password = "" //delete password
-
-	response := u.Message(true, "Account has been created")
+	response := u.Message(true, "Account has been created, Proceed With Verification")
 	response["account"] = account
 	return response
 }
 
-func Login(email, password string) (map[string]interface{}) {
+func Login(phone, otp string) (map[string]interface{}) {
 
 	account := &Account{}
-	err := GetDB().Table("accounts").Where("email = ?", email).First(account).Error
+	err := GetDB().Table("accounts").Where("phone_number = ?", phone).First(account).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return u.Message(false, "Email address not found")
+			return u.Message(false, "Phone Number address not found")
 		}
 		return u.Message(false, "Connection error. Please retry")
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(password))
-	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword { //Password does not match!
-		return u.Message(false, "Invalid login credentials. Please try again")
+	if totp.Verify(otp, 1524486261) != true { //OTP does not match!
+		return u.Message(false, "Invalid otp. Please try again")
 	}
-	//Worked! Logged In
-	account.Password = ""
 
 	//Create JWT token
 	tk := &Token{UserId: account.ID}
@@ -113,10 +193,9 @@ func GetUser(u uint) *Account {
 
 	acc := &Account{}
 	GetDB().Table("accounts").Where("id = ?", u).First(acc)
-	if acc.Email == "" { //User not found!
+	if acc.Phone == "" { //User not found!
 		return nil
 	}
 
-	acc.Password = ""
 	return acc
 }
