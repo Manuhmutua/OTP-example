@@ -28,7 +28,7 @@ type Token struct {
 //a struct to rep user account
 type Account struct {
 	gorm.Model
-	UUID       uuid.UUID `gorm:"primary_key;auto_increment:false"`
+	UUID     uuid.UUID `gorm:"primary_key;auto_increment:false"`
 	Phone    string    `json:"phone_number"`
 	UserName string    `json:"user_name"`
 	OTP      string    `json:"otp_number"`
@@ -38,9 +38,9 @@ type Account struct {
 //a struct to rep messages
 type Message struct {
 	gorm.Model
-	MessageID        uuid.UUID   `gorm:"primary_key;auto_increment:false"`
-	Recipient string      `json:"recipients_phone_number"`
-	Message   string      `json:"recipients_phone_number"`
+	MessageID uuid.UUID `gorm:"primary_key;auto_increment:false"`
+	Recipient string    `json:"recipients_phone_number"`
+	Message   string    `json:"recipients_phone_number"`
 }
 
 var totp *gotp.TOTP
@@ -60,7 +60,7 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	temp := &Account{}
 
 	//check for errors and duplicate phones
-	err := GetDB().Table("accounts").Where("phone_number = ?", account.Phone).First(temp).Error
+	err := GetDB().Table("accounts").Where("phone = ?", account.Phone).First(temp).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return u.Message(false, "Connection error. Please retry"+err.Error()), false
 	}
