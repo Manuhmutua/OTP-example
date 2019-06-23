@@ -21,7 +21,7 @@ func main() {
 
 	port := os.Getenv("PORT") //Get port from .env file, we did not specify any port so this should return an empty string when tested locally
 	if port == "" {
-		port = "9909" //localhost
+		port = "9999" //localhost
 	}
 
 	fmt.Println(port)

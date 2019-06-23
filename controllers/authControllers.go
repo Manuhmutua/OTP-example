@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/Manuhmutua/movies-backend-apis/models"
 	u "github.com/Manuhmutua/movies-backend-apis/utils"
+	"github.com/xlzd/gotp"
 	"net/http"
 )
 
@@ -29,6 +30,9 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := models.Login(account.Phone, account.OTP)
+	totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
+	totp.ProvisioningUri("OurMesseger", "movieShow")
+
+	resp := models.Login(account.Phone, account.OTP, totp)
 	u.Respond(w, resp)
 }

@@ -36,8 +36,6 @@ type Account struct {
 	Verified bool      `json:"verified"`
 }
 
-var Totp *gotp.TOTP
-
 //Validate incoming user details...
 func (account *Account) Validate() (map[string]interface{}, bool) {
 
@@ -121,10 +119,10 @@ func (account *Account) Create() map[string]interface{} {
 	}
 	account.UUID = Uuid
 
-	Totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
-	Totp.ProvisioningUri("OurMesseger", "movieShow")
+	totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
+	totp.ProvisioningUri("OurMesseger", "movieShow")
 
-	sendMessage(account.UserName, account.Phone, Totp)
+	sendMessage(account.UserName, account.Phone, totp)
 
 	GetDB().Create(account)
 
@@ -140,7 +138,7 @@ func (account *Account) Create() map[string]interface{} {
 	return response
 }
 
-func Login(phone string, otp string) map[string]interface{} {
+func Login(phone string, otp string, totp *gotp.TOTP) map[string]interface{} {
 
 	account := &Account{}
 	err := GetDB().Table("accounts").Where("phone = ?", phone).First(account).Error
@@ -151,7 +149,7 @@ func Login(phone string, otp string) map[string]interface{} {
 		return u.Message(false, "Connection error. Please retry")
 	}
 
-	if !strings.Contains(otp, Totp.Now()) { //OTP does not match!
+	if !strings.Contains(otp, totp.Now()) { //OTP does not match!
 		return u.Message(false, "Invalid otp. Please try again")
 	}
 
