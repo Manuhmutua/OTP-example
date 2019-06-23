@@ -141,7 +141,7 @@ func (account *Account) Create() map[string]interface{} {
 	return response
 }
 
-func Login(phone, otp string, verified bool) map[string]interface{} {
+func Login(phone, otp string, verified bool, totp *gotp.TOTP) map[string]interface{} {
 
 	account := &Account{}
 	err := GetDB().Table("accounts").Where("phone = ?", phone).First(account).Error
