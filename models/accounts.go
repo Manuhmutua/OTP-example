@@ -151,7 +151,7 @@ func Login(phone string, otp string, verified bool, in *gotp.TOTP) map[string]in
 		return u.Message(false, "Connection error. Please retry")
 	}
 
-	if otp != in.At(0){ //OTP does not match!
+	if otp != in.Now(){ //OTP does not match!
 		return u.Message(false, "Invalid otp. Please try again")
 	}
 
