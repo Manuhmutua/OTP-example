@@ -37,6 +37,7 @@ type Account struct {
 	Verified bool      `json:"verified"`
 }
 
+var Totp *gotp.TOTP
 //Validate incoming user details...
 func (account *Account) Validate() (map[string]interface{}, bool) {
 
