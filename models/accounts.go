@@ -83,7 +83,7 @@ func sendMessage(userName string, phoneNumber string, otp *gotp.TOTP) map[string
 	msgData := url.Values{}
 	msgData.Set("To", phoneNumber)
 	msgData.Set("From", os.Getenv("SMS_ACCOUNT_NUMBER"))
-	msgData.Set("Body", "Hello, "+userName+" . Your OTP pin is: "+otp.Now())
+	msgData.Set("Body", "Hello, "+userName+" . Your OTP pin is: "+otp.At(1524486261))
 	msgDataReader := *strings.NewReader(msgData.Encode())
 
 	client := &http.Client{}
@@ -137,7 +137,6 @@ func (account *Account) Create() map[string]interface{} {
 	return response
 }
 
-
 func Login(phone string, otp string) map[string]interface{} {
 
 	account := &Account{}
@@ -152,7 +151,7 @@ func Login(phone string, otp string) map[string]interface{} {
 	totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
 	totp.ProvisioningUri("OurMesseger", "movieShow")
 
-	if otp != totp.Now() { //OTP does not match!
+	if totp.Verify(otp, 1524486261) { //OTP does not match!
 		return u.Message(false, "Invalid otp. Please try again")
 	}
 
