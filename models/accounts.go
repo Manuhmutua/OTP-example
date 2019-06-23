@@ -84,7 +84,7 @@ func sendMessage(userName string, phoneNumber string, otp *gotp.TOTP) map[string
 	msgData := url.Values{}
 	msgData.Set("To", phoneNumber)
 	msgData.Set("From", os.Getenv("SMS_ACCOUNT_NUMBER"))
-	msgData.Set("Body", "Hello, " + userName + " . Your OTP pin is: " + totp.Now())
+	msgData.Set("Body", "Hello, " + userName + " . Your OTP pin is: " + otp.Now())
 	msgDataReader := *strings.NewReader(msgData.Encode())
 
 	client := &http.Client{}
