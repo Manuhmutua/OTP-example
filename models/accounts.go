@@ -28,7 +28,7 @@ type Token struct {
 //a struct to rep user account
 type Account struct {
 	gorm.Model
-	ID       uuid.UUID `gorm:"primary_key;auto_increment:false" json:"uuid"`
+	ID       uuid.UUID `gorm:"primary_key;auto_increment:false"`
 	Phone    string    `json:"phone_number"`
 	UserName string    `json:"user_name"`
 	OTP      string    `json:"otp_number"`
@@ -38,7 +38,7 @@ type Account struct {
 //a struct to rep messages
 type Message struct {
 	gorm.Model
-	ID        uuid.UUID   `gorm:"primary_key;auto_increment:false" json:"message_id"`
+	ID        uuid.UUID   `gorm:"primary_key;auto_increment:false"`
 	Recipient string      `json:"recipients_phone_number"`
 	Message   string      `json:"recipients_phone_number"`
 }
