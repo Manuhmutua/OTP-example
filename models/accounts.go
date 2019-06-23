@@ -45,6 +45,8 @@ type Message struct {
 
 var totp *gotp.TOTP
 
+var message *Message
+
 //Validate incoming user details...
 func (account *Account) Validate() (map[string]interface{}, bool) {
 
@@ -116,7 +118,6 @@ func sendMessage(userName string, phoneNumber string, otp *gotp.TOTP) map[string
 			if err != nil {
 				return u.Message(false, "Failed to create account, connection error.(UUID)")
 			}
-			var message Message
 			message.MessageID = id
 			message.Message = msg
 			message.Recipient = phoneNumber
