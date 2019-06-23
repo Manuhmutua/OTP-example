@@ -122,6 +122,7 @@ func (account *Account) Create() map[string]interface{} {
 	account.UUID = Uuid
 
 	Totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
+	Totp.At(1524486261)
 	Totp.ProvisioningUri("OurMesseger", "movieShow")
 
 	sendMessage(account.UserName, account.Phone, Totp)
@@ -151,7 +152,7 @@ func Login(phone string, otp string, verified bool, in *gotp.TOTP) map[string]in
 		return u.Message(false, "Connection error. Please retry")
 	}
 
-	if otp != in.Now(){ //OTP does not match!
+	if in.Verify(otp, 1524486261) != true { //OTP does not match!
 		return u.Message(false, "Invalid otp. Please try again")
 	}
 
