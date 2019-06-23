@@ -83,7 +83,7 @@ func sendMessage(userName string, phoneNumber string, otp *gotp.TOTP) map[string
 	msgData := url.Values{}
 	msgData.Set("To", phoneNumber)
 	msgData.Set("From", os.Getenv("SMS_ACCOUNT_NUMBER"))
-	msgData.Set("Body", "Hello, "+userName+" . Your OTP pin is: "+otp.At(1524486261))
+	msgData.Set("Body", "Hello, "+userName+" . Your OTP pin is: "+otp.Now())
 	msgDataReader := *strings.NewReader(msgData.Encode())
 
 	client := &http.Client{}
@@ -151,12 +151,12 @@ func Login(phone string, otp string) map[string]interface{} {
 	totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
 	totp.ProvisioningUri("OurMesseger", "movieShow")
 
-	if totp.Verify(otp, 1524486261) == false { //OTP does not match!
+	if totp.Now() != otp { //OTP does not match!
 		return u.Message(false, "Invalid otp. Please try again")
 	}
 
 	//Create JWT token
-	tk := &Token{UserId: account.UUID}
+	tk := &Token{UserId: account.UUID, Phone: account.Phone}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("TOKEN_PASSWORD")))
 	account.Token = tokenString //Store the token in the response
@@ -183,7 +183,7 @@ func Reset(phone string) map[string]interface{} {
 	sendMessage(account.UserName, account.Phone, totp)
 
 	//Create JWT token
-	tk := &Token{UserId: account.UUID}
+	tk := &Token{UserId: account.UUID, Phone: account.Phone}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("TOKEN_PASSWORD")))
 	account.Token = tokenString //Store the token in the response
