@@ -141,7 +141,7 @@ func (account *Account) Create() map[string]interface{} {
 	return response
 }
 
-func Login(phone, otp string) map[string]interface{} {
+func Login(phone, otp string, verified bool) map[string]interface{} {
 
 	account := &Account{}
 	err := GetDB().Table("accounts").Where("phone = ?", phone).First(account).Error
@@ -161,7 +161,7 @@ func Login(phone, otp string) map[string]interface{} {
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("TOKEN_PASSWORD")))
 	account.Token = tokenString //Store the token in the response
-	account.Verified = true
+	verified = true
 
 	resp := u.Message(true, "Logged In")
 	resp["account"] = account
