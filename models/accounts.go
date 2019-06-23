@@ -28,7 +28,7 @@ type Token struct {
 //a struct to rep user account
 type Account struct {
 	gorm.Model
-	ID       uuid.UUID `gorm:"primary_key;auto_increment:false"`
+	UUID       uuid.UUID `gorm:"primary_key;auto_increment:false"`
 	Phone    string    `json:"phone_number"`
 	UserName string    `json:"user_name"`
 	OTP      string    `json:"otp_number"`
@@ -38,7 +38,7 @@ type Account struct {
 //a struct to rep messages
 type Message struct {
 	gorm.Model
-	ID        uuid.UUID   `gorm:"primary_key;auto_increment:false"`
+	MessageID        uuid.UUID   `gorm:"primary_key;auto_increment:false"`
 	Recipient string      `json:"recipients_phone_number"`
 	Message   string      `json:"recipients_phone_number"`
 }
@@ -117,7 +117,7 @@ func sendMessage(userName string, phoneNumber string, otp *gotp.TOTP) map[string
 				return u.Message(false, "Failed to create account, connection error.(UUID)")
 			}
 			var message Message
-			message.ID = id
+			message.MessageID = id
 			message.Message = msg
 			message.Recipient = phoneNumber
 			GetDB().Create(message)
@@ -139,7 +139,7 @@ func (account *Account) Create() map[string]interface{} {
 	if err != nil {
 		return u.Message(false, "Failed to create account, connection error.(UUID)")
 	}
-	account.ID = Uuid
+	account.UUID = Uuid
 
 	// Handle Message Logic
 	totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
@@ -152,7 +152,7 @@ func (account *Account) Create() map[string]interface{} {
 	GetDB().Create(account)
 
 	//Create new JWT token for the newly registered account
-	tk := &Token{UserId: account.ID, Phone: account.Phone}
+	tk := &Token{UserId: account.UUID, Phone: account.Phone}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("TOKEN_PASSWORD")))
 	account.Token = tokenString
@@ -178,7 +178,7 @@ func Login(phone, otp string) (map[string]interface{}) {
 	}
 
 	//Create JWT token
-	tk := &Token{UserId: account.ID}
+	tk := &Token{UserId: account.UUID}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("TOKEN_PASSWORD")))
 	account.Token = tokenString //Store the token in the response
