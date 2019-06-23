@@ -171,7 +171,7 @@ func Login(phone string, otp string) map[string]interface{} {
 func Reset(phone string) map[string]interface{} {
 
 	account := &Account{}
-	err := GetDB().Table("accounts").Where("phone = ?").First(account).Error
+	err := GetDB().Table("accounts").Where("phone = ?", phone).First(account).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return u.Message(false, "Phone Number address not found or already Verified")
