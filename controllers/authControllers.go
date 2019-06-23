@@ -29,6 +29,6 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := models.Login(account.Phone, account.OTP, account.Verified, models.Totp)
+	resp := models.Login(account.Phone, account.OTP)
 	u.Respond(w, resp)
 }
