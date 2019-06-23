@@ -36,7 +36,7 @@ type Account struct {
 	Verified bool      `json:"verified"`
 }
 
-var totp *gotp.TOTP
+var Totp *gotp.TOTP
 
 //Validate incoming user details...
 func (account *Account) Validate() (map[string]interface{}, bool) {
@@ -122,10 +122,10 @@ func (account *Account) Create() map[string]interface{} {
 	account.UUID = Uuid
 
 	// Handle Message Logic
-	totp := gotp.NewDefaultTOTP(gotp.RandomSecret(16))
-	totp.ProvisioningUri("OurMesseger", "movieShow")
+	Totp := gotp.NewDefaultTOTP(gotp.RandomSecret(16))
+	Totp.ProvisioningUri("OurMesseger", "movieShow")
 
-	sendMessage(account.UserName, account.Phone, totp)
+	sendMessage(account.UserName, account.Phone, Totp)
 
 	GetDB().Create(account)
 

@@ -32,6 +32,6 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 	totp := gotp.NewDefaultTOTP(gotp.RandomSecret(16))
 	totp.ProvisioningUri("OurMesseger", "movieShow")
 
-	resp := models.Login(account.Phone, account.OTP, account.Verified, totp)
+	resp := models.Login(account.Phone, account.OTP, account.Verified, models.Totp)
 	u.Respond(w, resp)
 }
