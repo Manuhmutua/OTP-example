@@ -14,6 +14,7 @@ func main() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/api/v1/user/auth", controllers.CreateAccount).Methods("POST")
+	router.HandleFunc("/api/v1/user/resetOTP", controllers.Reset).Methods("POST")
 	router.HandleFunc("/api/v1/user/login", controllers.Authenticate).Methods("POST")
 	router.HandleFunc("/api/v1/getMovies", controllers.GetContactsFor).Methods("GET")
 

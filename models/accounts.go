@@ -168,6 +168,34 @@ func Login(phone string, otp string) map[string]interface{} {
 	return resp
 }
 
+func Reset(phone string) map[string]interface{} {
+
+	account := &Account{}
+	err := GetDB().Table("accounts").Where("phone = ?", phone).Where("verified", false).First(account).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return u.Message(false, "Phone Number address not found or already Verified")
+		}
+		return u.Message(false, "Connection error. Please retry")
+	}
+
+	totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
+	totp.ProvisioningUri("OurMesseger", "movieShow")
+
+	sendMessage(account.UserName, account.Phone, totp)
+
+	//Create JWT token
+	tk := &Token{UserId: account.UUID}
+	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
+	tokenString, _ := token.SignedString([]byte(os.Getenv("TOKEN_PASSWORD")))
+	account.Token = tokenString //Store the token in the response
+	account.Verified = true
+
+	resp := u.Message(true, "Resend OTP")
+	resp["account"] = account
+	return resp
+}
+
 func GetUser(u uuid.UUID) *Account {
 	acc := &Account{}
 	GetDB().Table("accounts").Where("uuid = ?", u).First(acc)

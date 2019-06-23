@@ -32,3 +32,15 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 	resp := models.Login(account.Phone, account.OTP)
 	u.Respond(w, resp)
 }
+
+var Reset = func(w http.ResponseWriter, r *http.Request) {
+	account := &models.Account{}
+	err := json.NewDecoder(r.Body).Decode(account) //decode the request body into struct and failed if any error occur
+	if err != nil {
+		u.Respond(w, u.Message(false, "Invalid request"))
+		return
+	}
+
+	resp := models.Reset(account.Phone)
+	u.Respond(w, resp)
+}
