@@ -41,7 +41,6 @@ type Message struct {
 	ID        uuid.UUID   `gorm:"primary_key;auto_increment:false" json:"message_id"`
 	Recipient string      `json:"recipients_phone_number"`
 	Message   string      `json:"recipients_phone_number"`
-	SID       interface{} `json:"message_sid"`
 }
 
 var totp *gotp.TOTP
@@ -121,7 +120,6 @@ func sendMessage(userName string, phoneNumber string, otp *gotp.TOTP) map[string
 			message.ID = id
 			message.Message = msg
 			message.Recipient = phoneNumber
-			message.SID = data["sid"]
 			GetDB().Create(message)
 		}
 	} else {
