@@ -8,8 +8,6 @@ import (
 	"net/http"
 )
 
-var totp *gotp.TOTP
-
 var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 
 	account := &models.Account{}
@@ -18,9 +16,6 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Invalid request"))
 		return
 	}
-
-	totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
-	totp.ProvisioningUri("OurMesseger", "movieShow")
 
 	resp := account.Create() //Create account
 	u.Respond(w, resp)
@@ -37,6 +32,6 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 	totp := gotp.NewDefaultTOTP(gotp.RandomSecret(16))
 	totp.ProvisioningUri("OurMesseger", "movieShow")
 
-	resp := models.Login(account.Phone, account.OTP, account.Verified, totp)
+	resp := models.Login(account.Phone, account.OTP, account.Verified, models.totp)
 	u.Respond(w, resp)
 }
