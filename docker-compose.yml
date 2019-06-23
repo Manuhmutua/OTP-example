@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: db_user
       POSTGRES_DB: database
     ports:
-      - 5434:5434
+      - 5434:5432
 
   application:
     depends_on:
@@ -18,5 +18,13 @@ services:
     build:
       context: .
     restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: db_user
+      POSTGRES_DB: database
+      DB_TYPE: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      TOKEN_PASSWORD: thisIsTheJwtSecretPassword
     ports:
       - 12345:8000

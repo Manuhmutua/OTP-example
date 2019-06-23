@@ -43,7 +43,7 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	//check for errors and duplicate emails
 	err := GetDB().Table("accounts").Where("email = ?", account.Email).First(temp).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
-		return u.Message(false, "Connection error. Please retry"), false
+		return u.Message(false, "Connection error. Please retry" + err.Error()), false
 	}
 	if temp.Email != "" {
 		return u.Message(false, "Email address already in use by another user."), false
@@ -70,7 +70,7 @@ func (account *Account) Create() (map[string]interface{}) {
 	//Create new JWT token for the newly registered account
 	tk := &Token{UserId: account.ID, Useremail: account.Email}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
-	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
+	tokenString, _ := token.SignedString([]byte(os.Getenv("TOKEN_PASSWORD")))
 	account.Token = tokenString
 
 	account.Password = "" //delete password
@@ -101,7 +101,7 @@ func Login(email, password string) (map[string]interface{}) {
 	//Create JWT token
 	tk := &Token{UserId: account.ID}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
-	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
+	tokenString, _ := token.SignedString([]byte(os.Getenv("TOKEN_PASSWORD")))
 	account.Token = tokenString //Store the token in the response
 
 	resp := u.Message(true, "Logged In")
