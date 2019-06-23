@@ -141,7 +141,7 @@ func (account *Account) Create() map[string]interface{} {
 	return response
 }
 
-func Login(phone, otp string, verified bool, totp *gotp.TOTP) map[string]interface{} {
+func Login(phone string, otp string, verified bool, in *gotp.TOTP) map[string]interface{} {
 
 	account := &Account{}
 	err := GetDB().Table("accounts").Where("phone = ?", phone).First(account).Error
@@ -152,7 +152,7 @@ func Login(phone, otp string, verified bool, totp *gotp.TOTP) map[string]interfa
 		return u.Message(false, "Connection error. Please retry")
 	}
 
-	if otp != totp.Now() { //OTP does not match!
+	if otp != in.Now() { //OTP does not match!
 		return u.Message(false, "Invalid otp. Please try again")
 	}
 
