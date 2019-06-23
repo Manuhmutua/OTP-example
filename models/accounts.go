@@ -176,9 +176,7 @@ func Reset(phone string) map[string]interface{} {
 		return u.Message(false, "Connection error. Please retry")
 	}
 
-	totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
-	totp.ProvisioningUri("OurMesseger", "movieShow")
-	sendMessage(account.UserName, account.Phone, totp)
+	sendMessage(account.UserName, account.Phone, Totp)
 
 	//Create JWT token
 	tk := &Token{UserId: account.UUID, Phone: account.Phone}
