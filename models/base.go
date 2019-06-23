@@ -5,6 +5,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/joho/godotenv"
+	"os"
 )
 
 var db *gorm.DB //database
@@ -16,11 +17,11 @@ func init() {
 		fmt.Print(e)
 	}
 
-	username := "postgres"
-	password := "postgres"
-	dbName := "the_ledger"
-	dbHost := "localhost"
-	dbPort := "5432"
+	username := os.Getenv("POSTGRES_USER")
+	password := os.Getenv("POSTGRES_PASSWORD")
+	dbName := os.Getenv("POSTGRES_DB")
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
 
 	conn, err := gorm.Open("postgres", "host="+dbHost+" user="+username+" dbname="+dbName+" password="+password+" port="+dbPort)
 	if err != nil {
