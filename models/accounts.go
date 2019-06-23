@@ -35,17 +35,7 @@ type Account struct {
 	Token    string    `json:"token";sql:"-"`
 }
 
-//a struct to rep messages
-type Message struct {
-	gorm.Model
-	MessageID uuid.UUID `gorm:"primary_key;auto_increment:false"`
-	Recipient string    `json:"recipients_phone_number"`
-	Message   string    `json:"recipients_phone_number"`
-}
-
 var totp *gotp.TOTP
-
-var message *Message
 
 //Validate incoming user details...
 func (account *Account) Validate() (map[string]interface{}, bool) {
@@ -118,10 +108,6 @@ func sendMessage(userName string, phoneNumber string, otp *gotp.TOTP) map[string
 			if err != nil {
 				return u.Message(false, "Failed to create account, connection error.(UUID)")
 			}
-			message.MessageID = id
-			message.Message = msg
-			message.Recipient = phoneNumber
-			GetDB().Create(message)
 		}
 	} else {
 		return u.Message(false, "Failed to create account, connection error.(Sending Message)")
