@@ -79,7 +79,7 @@ func sendMessage(userName string, phoneNumber string, otp *gotp.TOTP) map[string
 	urlStr := "https://api.twilio.com/2010-04-01/Accounts/" + accountSid + "/Messages.json"
 
 	// Create possible message bodies
-	msg := fmt.Sprintf("Hello, %d . Your OTP pin is: %d", userName, otp)
+	msg := fmt.Sprintf("Hello, " + userName + " . Your OTP pin is: " + totp.Now())
 
 	// Set up rand
 	rand.Seed(time.Now().Unix())
@@ -103,11 +103,6 @@ func sendMessage(userName string, phoneNumber string, otp *gotp.TOTP) map[string
 		err := decoder.Decode(&data)
 		if err == nil {
 			fmt.Println(data["sid"])
-
-			id, err := uuid.FromString("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
-			if err != nil {
-				return u.Message(false, "Failed to create account, connection error.(UUID)")
-			}
 		}
 	} else {
 		return u.Message(false, "Failed to create account, connection error.(Sending Message)")
@@ -129,9 +124,7 @@ func (account *Account) Create() map[string]interface{} {
 	account.UUID = Uuid
 
 	// Handle Message Logic
-	totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
-	totp.Now()          // current otp '123456'
-	totp.At(1524486261) // otp of timestamp 1524486261 '123456'
+	totp := gotp.NewDefaultTOTP(gotp.RandomSecret(16))
 	totp.ProvisioningUri("OurMesseger", "movieShow")
 
 	sendMessage(account.UserName, account.Phone, totp)
@@ -149,10 +142,10 @@ func (account *Account) Create() map[string]interface{} {
 	return response
 }
 
-func Login(phone, otp string) (map[string]interface{}) {
+func Login(phone, otp string) map[string]interface{} {
 
 	account := &Account{}
-	err := GetDB().Table("accounts").Where("phone_number = ?", phone).First(account).Error
+	err := GetDB().Table("accounts").Where("phone = ?", phone).First(account).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return u.Message(false, "Phone Number address not found")
@@ -160,7 +153,7 @@ func Login(phone, otp string) (map[string]interface{}) {
 		return u.Message(false, "Connection error. Please retry")
 	}
 
-	if totp.Verify(otp, 1524486261) != true { //OTP does not match!
+	if otp != totp.Now() { //OTP does not match!
 		return u.Message(false, "Invalid otp. Please try again")
 	}
 
