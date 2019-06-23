@@ -31,6 +31,7 @@ type Account struct {
 	ID       uuid.UUID `gorm:"primary_key;auto_increment:false" json:"uuid"`
 	Phone    string    `json:"phone_number"`
 	UserName string    `json:"user_name"`
+	OTP      string    `json:"otp_number"`
 	Token    string    `json:"token";sql:"-"`
 }
 
