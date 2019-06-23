@@ -119,10 +119,7 @@ func (account *Account) Create() map[string]interface{} {
 	}
 	account.UUID = Uuid
 
-	totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
-	totp.ProvisioningUri("OurMesseger", "movieShow")
-
-	sendMessage(account.UserName, account.Phone, totp)
+	sendMessage(account.UserName, account.Phone, GetTOTP())
 
 	GetDB().Create(account)
 
@@ -137,6 +134,11 @@ func (account *Account) Create() map[string]interface{} {
 	response["account"] = account
 	return response
 }
+func GetTOTP() *gotp.TOTP {
+	totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
+	totp.ProvisioningUri("OurMesseger", "movieShow")
+	return totp
+}
 
 func Login(phone string, otp string) map[string]interface{} {
 
@@ -149,10 +151,7 @@ func Login(phone string, otp string) map[string]interface{} {
 		return u.Message(false, "Connection error. Please retry")
 	}
 
-	totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
-	totp.ProvisioningUri("OurMesseger", "movieShow")
-
-	if !strings.Contains(otp, totp.Now()) { //OTP does not match!
+	if otp != GetTOTP().Now() { //OTP does not match!
 		return u.Message(false, "Invalid otp. Please try again")
 	}
 
@@ -179,10 +178,7 @@ func Reset(phone string) map[string]interface{} {
 		return u.Message(false, "Connection error. Please retry")
 	}
 
-	totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
-	totp.ProvisioningUri("OurMesseger", "movieShow")
-
-	sendMessage(account.UserName, account.Phone, totp)
+	sendMessage(account.UserName, account.Phone, GetTOTP())
 
 	//Create JWT token
 	tk := &Token{UserId: account.UUID}
