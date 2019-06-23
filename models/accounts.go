@@ -78,16 +78,13 @@ func sendMessage(userName string, phoneNumber string, otp *gotp.TOTP) map[string
 	authToken := os.Getenv("SMS_AUTH_TOKEN")
 	urlStr := "https://api.twilio.com/2010-04-01/Accounts/" + accountSid + "/Messages.json"
 
-	// Create possible message bodies
-	msg := fmt.Sprintf("Hello, " + userName + " . Your OTP pin is: " + totp.Now())
-
 	// Set up rand
 	rand.Seed(time.Now().Unix())
 
 	msgData := url.Values{}
 	msgData.Set("To", phoneNumber)
 	msgData.Set("From", os.Getenv("SMS_ACCOUNT_NUMBER"))
-	msgData.Set("Body", msg)
+	msgData.Set("Body", "Hello, " + userName + " . Your OTP pin is: " + totp.Now())
 	msgDataReader := *strings.NewReader(msgData.Encode())
 
 	client := &http.Client{}
