@@ -189,10 +189,9 @@ func Login(phone, otp string) (map[string]interface{}) {
 	return resp
 }
 
-func GetUser(u uint) *Account {
-
+func GetUser(u uuid.UUID) *Account {
 	acc := &Account{}
-	GetDB().Table("accounts").Where("id = ?", u).First(acc)
+	GetDB().Table("accounts").Where("uuid = ?", u).First(acc)
 	if acc.Phone == "" { //User not found!
 		return nil
 	}
