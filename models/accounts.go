@@ -151,7 +151,7 @@ func Login(phone string, otp string) map[string]interface{} {
 	totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
 	totp.ProvisioningUri("OurMesseger", "movieShow")
 
-	if totp.Verify(otp, 1524486261) { //OTP does not match!
+	if totp.Verify(otp, 1524486261) == false { //OTP does not match!
 		return u.Message(false, "Invalid otp. Please try again")
 	}
 
