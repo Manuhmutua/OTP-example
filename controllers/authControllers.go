@@ -4,8 +4,15 @@ import (
 	"encoding/json"
 	"github.com/Manuhmutua/movies-backend-apis/models"
 	u "github.com/Manuhmutua/movies-backend-apis/utils"
+	"github.com/xlzd/gotp"
 	"net/http"
 )
+
+func getTotp() *gotp.TOTP {
+	totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
+	totp.ProvisioningUri("OurMesseger", "movieShow")
+	return totp
+}
 
 var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 
@@ -16,7 +23,7 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := account.Create() //Create account
+	resp := account.Create(getTotp()) //Create account
 	u.Respond(w, resp)
 }
 
@@ -29,7 +36,7 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := models.Login(account.Phone, account.OTP)
+	resp := models.Login(account.Phone, account.OTP, getTotp())
 	u.Respond(w, resp)
 }
 
@@ -41,6 +48,6 @@ var Reset = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := models.Reset(account.Phone)
+	resp := models.Reset(account.Phone, getTotp())
 	u.Respond(w, resp)
 }

@@ -106,7 +106,7 @@ func sendMessage(userName string, phoneNumber string, otp *gotp.TOTP) map[string
 	return nil
 }
 
-func (account *Account) Create() map[string]interface{} {
+func (account *Account) Create(totp *gotp.TOTP) map[string]interface{} {
 
 	if resp, ok := account.Validate(); !ok {
 		return resp
@@ -119,8 +119,6 @@ func (account *Account) Create() map[string]interface{} {
 	}
 	account.UUID = Uuid
 
-	totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
-	totp.ProvisioningUri("OurMesseger", "movieShow")
 	sendMessage(account.UserName, account.Phone, totp)
 
 	GetDB().Create(account)
@@ -137,7 +135,7 @@ func (account *Account) Create() map[string]interface{} {
 	return response
 }
 
-func Login(phone string, otp string) map[string]interface{} {
+func Login(phone string, otp string, totp *gotp.TOTP) map[string]interface{} {
 
 	account := &Account{}
 	err := GetDB().Table("accounts").Where("phone = ?", phone).First(account).Error
@@ -147,9 +145,6 @@ func Login(phone string, otp string) map[string]interface{} {
 		}
 		return u.Message(false, "Connection error. Please retry")
 	}
-
-	totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
-	totp.ProvisioningUri("OurMesseger", "movieShow")
 
 	now := time.Now()
 	if totp.Verify(otp, int(now.Unix())) != true { //OTP does not match!
@@ -168,7 +163,7 @@ func Login(phone string, otp string) map[string]interface{} {
 	return resp
 }
 
-func Reset(phone string) map[string]interface{} {
+func Reset(phone string, totp *gotp.TOTP) map[string]interface{} {
 
 	account := &Account{}
 	err := GetDB().Table("accounts").Where("phone = ?", phone).First(account).Error
@@ -178,9 +173,6 @@ func Reset(phone string) map[string]interface{} {
 		}
 		return u.Message(false, "Connection error. Please retry")
 	}
-
-	totp := gotp.NewDefaultTOTP("4S62BZNFXXSZLCRO")
-	totp.ProvisioningUri("OurMesseger", "movieShow")
 
 	sendMessage(account.UserName, account.Phone, totp)
 
